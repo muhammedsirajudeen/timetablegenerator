@@ -1,4 +1,3 @@
-```markdown
 # 📅 Automatic Timetable Generator
 
 An automatic timetable generator for colleges that efficiently schedules classes based on given semester and teacher data.
@@ -82,5 +81,4 @@ This project is licensed under the MIT License.
 ---
 
 Made with ❤️ for better academic scheduling! 🚀
-```
 
