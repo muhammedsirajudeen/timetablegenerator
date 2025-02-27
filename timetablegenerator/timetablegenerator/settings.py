@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'api',
     'rest_framework',
+    'rest_framework_simplejwt'
     ]
 
 MIDDLEWARE = [
@@ -51,6 +52,15 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     #these are all user defined 
 ]
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    ),
+}
 
 ROOT_URLCONF = 'timetablegenerator.urls'
 
@@ -73,6 +83,8 @@ TEMPLATES = [
 WSGI_APPLICATION = 'timetablegenerator.wsgi.application'
 
 
+#user model
+AUTH_USER_MODEL="api.CustomUser"
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
