@@ -38,6 +38,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'api',
+    #crud is for adding teachers and things like thats
+    'crud',
     'rest_framework',
     'rest_framework_simplejwt'
     ]
@@ -63,6 +65,17 @@ REST_FRAMEWORK = {
 }
 
 ROOT_URLCONF = 'timetablegenerator.urls'
+from datetime import timedelta
+
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(days=1),  # Set access token validity to 1 day
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=7),  # (Optional) Refresh token validity
+    "ROTATE_REFRESH_TOKENS": False,
+    "BLACKLIST_AFTER_ROTATION": True,
+    "ALGORITHM": "HS256",
+    "SIGNING_KEY": SECRET_KEY,
+    "AUTH_HEADER_TYPES": ("Bearer",),
+}
 
 TEMPLATES = [
     {
