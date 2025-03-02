@@ -37,7 +37,20 @@ def TeacherSubjectViewSet(request):
         except:
             return Response({"message":"Teacher has already been assigned"},status=409)
         return Response({"message":"success"},status=201)
-    if request.method=='GET':
+    elif request.method=='GET':
         teacher_subjects = Teacher_Subject.objects.all()
         serializer = TeacherSubjectSerializer(teacher_subjects, many=True)
-        return Response(serializer.data, status=200)
+        return Response(serializer.data, status=200)     
+    elif request.method == 'PUT':
+        teacher = request.data.get('teacher')
+        subject = request.data.get('subject')
+        if not subject or not teacher:
+            return Response({"message": "Bad Request"}, status=400)
+        try:
+            teacher_instance = Teachers.objects.get(id=teacher)
+            subject_instance = Subjects.objects.get(id=subject)
+            teacher_subject = Teacher_Subject.objects.get(teacher=teacher_instance, subject=subject_instance)
+            teacher_subject.delete()
+            return Response({"message": "Deleted successfully"}, status=200)
+        except Teacher_Subject.DoesNotExist:
+            return Response({"message": "Teacher-Subject relation not found"}, status=404)
