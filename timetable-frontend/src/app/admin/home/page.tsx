@@ -15,6 +15,11 @@ export default function AdminDashboard() {
       <aside className="w-64 bg-white shadow-md p-6 flex flex-col">
         <h2 className="text-2xl font-bold text-gray-800">Admin Panel</h2>
         <nav className="mt-6 flex flex-col gap-3">
+        <button
+            className="w-full text-left px-4 py-2 rounded-lg text-gray-700 bg-gray-200"
+          >
+            Admin Dashboard
+          </button>
           <button
             onClick={() => router.push("/admin/teachers")}
             className="w-full text-left px-4 py-2 rounded-lg text-gray-700 hover:bg-gray-200 transition"
