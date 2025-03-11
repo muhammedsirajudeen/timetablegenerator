@@ -22,3 +22,7 @@ export const validatePassword = (password: string): string | null => {
     return null;
   };
   
+  export const validateMobileNumber = (mob:string): boolean =>{
+    const mobRegex = /^[0-9]{10}$/;
+    return mobRegex.test(mob)
+  }

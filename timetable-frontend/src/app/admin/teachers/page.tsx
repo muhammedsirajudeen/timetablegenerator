@@ -1,319 +1,343 @@
-"use client";
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+"use client"
+
+import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
+import { motion } from "framer-motion"
+import { toast } from "react-hot-toast"
+import { validateMobileNumber } from "@/utils/validation"
+import { Plus, Eye, Edit, LogOut } from "lucide-react"
+
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import { Label } from "@/components/ui/label"
+
+interface Teacher {
+  id: number
+  name: string
+  phone_number: string
+  department: string
+  subjects: string[]
+}
 
 export default function ManageTeachers() {
-  const router = useRouter();
-  interface Teacher {
-    id: number;
-    name: string;
-    phone_number: string;
-    department: string;
-    subjects: string[];
-  }
-  
-  const [teachers, setTeachers] = useState<Teacher[]>([]);  
-  const [newTeacher, setNewTeacher] = useState({ name: "", phone_number: ""});
-  const [selectedTeacher, setSelectedTeacher] = useState<Teacher | null>(null);
-  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  
-  // Fetch teachers from the backend API
+  const router = useRouter()
+  const [teachers, setTeachers] = useState<Teacher[]>([])
+  const [newTeacher, setNewTeacher] = useState({ name: "", phone_number: "" })
+  const [selectedTeacher, setSelectedTeacher] = useState<Teacher | null>(null)
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false)
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false)
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+
   useEffect(() => {
-    const fetchTeachers = async () => {
-      try {
-        const token = localStorage.getItem("access_token");
-        const response = await fetch("http://localhost:8000/api/teachers/", {
-          method: "GET",
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (!response.ok) throw new Error("Failed to fetch teachers");
-        const data = await response.json();
-        setTeachers(data);
-      } catch (error) {
-        console.error("Error fetching teachers:", error);
+    fetchTeachers()
+  }, [])
+
+  const fetchTeachers = async () => {
+    try {
+      const token = localStorage.getItem("access_token")
+      const response = await fetch("http://localhost:8000/api/teachers/", {
+        method: "GET",
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      if (!response.ok) {
+        throw new Error("Failed to fetch teachers")
       }
-    };
-    fetchTeachers();
-  }, []);
-  
+      const data = await response.json()
+      setTeachers(data)
+    } catch (error) {
+      toast.error("Error fetching teachers")
+      console.error("Error fetching teachers:", error)
+    }
+  }
+
   const handleAddTeacher = async () => {
-    const token = localStorage.getItem("access_token");
-    if (!newTeacher.name || !/^[0-9]{10}$/.test(newTeacher.phone_number)) {
-      alert("Please enter a valid name and a 10-digit phone number.");
-      return;
+    if (!newTeacher.name || !validateMobileNumber(newTeacher.phone_number)) {
+      toast.error("Please enter a valid name and a 10-digit phone number")
+      return
     }
     try {
+      const token = localStorage.getItem("access_token")
       const response = await fetch("http://localhost:8000/api/teachers/", {
         method: "POST",
         headers: {
-          "Authorization": `Bearer ${token}`,
-          "Content-type": "application/json"
+          Authorization: `Bearer ${token}`,
+          "Content-type": "application/json",
         },
         body: JSON.stringify(newTeacher),
-      });
+      })
 
-      if (!response.ok) throw new Error("Failed to add teacher");
-
-      const newTeacherData = await response.json();
-      setTeachers((prev) => [...prev, newTeacherData]);
-      setNewTeacher({ name: "", phone_number: ""});
-      setIsAddModalOpen(false);
+      if (!response.ok) {
+        throw new Error("Failed to add teacher")
+      }
+      const newTeacherData = await response.json()
+      setTeachers((prev) => [...prev, newTeacherData])
+      setNewTeacher({ name: "", phone_number: "" })
+      setIsAddModalOpen(false)
+      toast.success("Successfully added teacher")
     } catch (error) {
-      console.error("Error adding teacher:", error);
+      toast.error("Error adding teacher")
+      console.error("Error adding teacher:", error)
     }
-  };
+  }
 
   const handleEditTeacher = async () => {
-    if (!selectedTeacher) return;
-    
-    const token = localStorage.getItem("access_token");
-    try {
-      const response = await fetch(`http://localhost:8000/api/teachers/${selectedTeacher.id}/`, {
-        method: "PATCH",
-        headers: {
-          "Authorization": `Bearer ${token}`,
-          "Content-type": "application/json"
-        },
-        body: JSON.stringify(selectedTeacher),
-      });
-
-      if (!response.ok) throw new Error("Failed to update teacher");
-
-      const updatedTeacher = await response.json();
-      setTeachers(teachers.map(t => t.id === updatedTeacher.id ? updatedTeacher : t));
-      setIsEditModalOpen(false);
-    } catch (error) {
-      console.error("Error updating teacher:", error);
+    if (!selectedTeacher || !validateMobileNumber(selectedTeacher.phone_number) || !selectedTeacher.name) {
+      toast.error("Please enter a valid name and a 10-digit phone number")
+      return
     }
-  };
+
+    try {
+      const token = localStorage.getItem("access_token")
+      const payload = {
+        name: selectedTeacher.name,
+        phone_number: selectedTeacher.phone_number,
+      }
+      const response = await fetch(`http://localhost:8000/api/teachers/${selectedTeacher.id}/`, {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      })
+
+      if (!response.ok) {
+        throw new Error("Failed to update teacher")
+      }
+      const updatedTeacher = await response.json()
+      setTeachers(teachers.map((t) => (t.id === updatedTeacher.id ? updatedTeacher : t)))
+      setIsEditModalOpen(false)
+      toast.success("Successfully updated teacher")
+    } catch (error) {
+      toast.error("Error updating teacher")
+      console.error("Error updating teacher:", error)
+    }
+  }
 
   const handleViewTeacher = async (id: number) => {
-    const token = localStorage.getItem("access_token");
     try {
+      const token = localStorage.getItem("access_token")
       const response = await fetch(`http://localhost:8000/api/teachers/${id}/`, {
         method: "GET",
         headers: {
-          "Authorization": `Bearer ${token}`
+          Authorization: `Bearer ${token}`,
         },
-      });
-      if (!response.ok) throw new Error("Failed to fetch teacher details");
-      const data = await response.json();
-      setSelectedTeacher(data);
-      setIsViewModalOpen(true);
+      })
+      if (!response.ok) throw new Error("Failed to fetch teacher details")
+      const data = await response.json()
+      setSelectedTeacher(data)
+      setIsViewModalOpen(true)
     } catch (error) {
-      console.error("Error fetching teacher details:", error);
+      toast.error("Error fetching teacher details")
+      console.error("Error fetching teacher details:", error)
     }
-  };
-
-  const openEditModal = (teacher: Teacher) => {
-    setSelectedTeacher(teacher);
-    setIsEditModalOpen(true);
-  };
+  }
 
   const handleLogout = () => {
-    localStorage.removeItem("access_token");
-    router.push("/admin/auth/login");
-  };
+    localStorage.removeItem("access_token")
+    router.push("/admin/auth/login")
+  }
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex h-screen bg-gradient-to-br from-slate-50 to-slate-100 overflow-hidden">
       {/* Sidebar */}
-      <aside className="w-64 bg-white shadow-md p-6 fixed h-screen flex flex-col">
-        <h2 className="text-2xl font-bold text-gray-800">Admin Panel</h2>
+      <motion.aside
+        initial={{ x: -300 }}
+        animate={{ x: 0 }}
+        transition={{ duration: 0.5 }}
+        className="w-64 bg-white shadow-lg p-6 fixed h-screen flex flex-col"
+      >
+        <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+          Admin Panel
+        </h2>
         <nav className="mt-6 flex flex-col gap-2">
-          <button
-            onClick={() => router.push("/admin/home")}
-            className="w-full text-left px-4 py-2 rounded text-gray-700 hover:bg-gray-100 transition"
-          >
+          <Button variant="ghost" className="justify-start" onClick={() => router.push("/admin/home")}>
             Admin Dashboard
-          </button>
-          <button className="w-full text-left px-4 py-2 rounded text-gray-700 bg-gray-100">
+          </Button>
+          <Button variant="secondary" className="justify-start">
             Manage Teachers
-          </button>
-          <button
-            onClick={() => router.push("/admin/subjects")}
-            className="w-full text-left px-4 py-2 rounded text-gray-700 hover:bg-gray-100 transition"
-          >
+          </Button>
+          <Button variant="ghost" className="justify-start" onClick={() => router.push("/admin/subjects")}>
             Manage Subjects
-          </button>
+          </Button>
         </nav>
-        <button
-          onClick={handleLogout}
-          className="mt-auto w-full bg-gray-200 text-gray-800 py-2 rounded hover:bg-gray-300 transition"
-        >
-          Logout
-        </button>
-      </aside>
+        <Button variant="outline" className="mt-auto" onClick={handleLogout}>
+          <LogOut className="mr-2 h-4 w-4" /> Logout
+        </Button>
+      </motion.aside>
 
       {/* Main Content */}
       <main className="ml-64 flex-1 p-6 overflow-auto">
-        <div className="max-w-6xl mx-auto">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="max-w-6xl mx-auto"
+        >
           <div className="flex justify-between items-center mb-6">
-            <h1 className="text-2xl font-bold text-gray-800">Manage Teachers</h1>
-            <button
-              onClick={() => setIsAddModalOpen(true)}
-              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
-            >
-              Add New Teacher
-            </button>
+            <h1 className="text-3xl font-bold text-gray-800">Manage Teachers</h1>
+            <Button onClick={() => setIsAddModalOpen(true)}>
+              <Plus className="mr-2 h-4 w-4" /> Add New Teacher
+            </Button>
           </div>
 
-          {/* Teachers Table */}
-          <div className="bg-white shadow-md rounded-md overflow-hidden">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Phone Number</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Department</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {teachers.map((teacher) => (
-                  <tr key={teacher.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap">{teacher.name}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">{teacher.phone_number}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">{teacher.department}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex space-x-2">
-                        <button 
-                          onClick={() => handleViewTeacher(teacher.id)} 
-                          className="text-blue-600 hover:text-blue-800"
-                        >
-                          View
-                        </button>
-                        <button 
-                          onClick={() => openEditModal(teacher)} 
-                          className="text-yellow-600 hover:text-yellow-800"
-                        >
-                          Edit
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            {teachers.length === 0 && (
-              <div className="py-8 text-center text-gray-500">
-                No teachers found. Add a new teacher to get started.
-              </div>
-            )}
-          </div>
-        </div>
+          <Card>
+            <CardHeader>
+              <CardTitle>Teachers</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Phone Number</TableHead>
+                    <TableHead>Department</TableHead>
+                    <TableHead>Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {teachers.map((teacher) => (
+                    <TableRow key={teacher.id}>
+                      <TableCell>{teacher.name}</TableCell>
+                      <TableCell>{teacher.phone_number}</TableCell>
+                      <TableCell>{teacher.department}</TableCell>
+                      <TableCell>
+                        <div className="flex space-x-2">
+                          <Button variant="outline" size="sm" onClick={() => handleViewTeacher(teacher.id)}>
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              setSelectedTeacher(teacher)
+                              setIsEditModalOpen(true)
+                            }}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+              {teachers.length === 0 && (
+                <div className="py-8 text-center text-gray-500">
+                  No teachers found. Add a new teacher to get started.
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </motion.div>
 
         {/* View Teacher Modal */}
-        {isViewModalOpen && selectedTeacher && (
-          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-30">
-            <div className="bg-white p-6 rounded shadow-lg w-full max-w-md">
-              <h2 className="text-xl font-bold text-gray-800 mb-4 border-b pb-2">Teacher Details</h2>
+        <Dialog open={isViewModalOpen} onOpenChange={setIsViewModalOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Teacher Details</DialogTitle>
+            </DialogHeader>
+            {selectedTeacher && (
               <div className="space-y-2">
-                <p><span className="font-medium">Name:</span> {selectedTeacher.name}</p>
-                <p><span className="font-medium">Phone:</span> {selectedTeacher.phone_number}</p>
-                <p><span className="font-medium">Department:</span> {selectedTeacher.department || "Not assigned"}</p>
-                <p><span className="font-medium">Subjects:</span> {selectedTeacher.subjects?.length ? selectedTeacher.subjects.join(", ") : "None assigned"}</p>
+                <p>
+                  <span className="font-medium">Name:</span> {selectedTeacher.name}
+                </p>
+                <p>
+                  <span className="font-medium">Phone:</span> {selectedTeacher.phone_number}
+                </p>
+                <p>
+                  <span className="font-medium">Department:</span> {selectedTeacher.department || "Not assigned"}
+                </p>
+                <p>
+                  <span className="font-medium">Subjects:</span>{" "}
+                  {selectedTeacher.subjects?.length ? selectedTeacher.subjects.join(", ") : "None assigned"}
+                </p>
               </div>
-              <div className="mt-6 flex justify-end">
-                <button 
-                  onClick={() => setIsViewModalOpen(false)} 
-                  className="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 transition"
-                >
-                  Close
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
+            )}
+          </DialogContent>
+        </Dialog>
 
         {/* Add Teacher Modal */}
-        {isAddModalOpen && (
-          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-30">
-            <div className="bg-white p-6 rounded shadow-lg w-full max-w-md">
-              <h2 className="text-xl font-bold text-gray-800 mb-4 border-b pb-2">Add New Teacher</h2>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
-                  <input
-                    type="text"
-                    className="w-full p-2 border rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
-                    value={newTeacher.name}
-                    onChange={(e) => setNewTeacher({ ...newTeacher, name: e.target.value })}
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
-                  <input
-                    type="text"
-                    className="w-full p-2 border rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
-                    value={newTeacher.phone_number}
-                    onChange={(e) => setNewTeacher({ ...newTeacher, phone_number: e.target.value })}
-                  />
-                </div>
+        <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Add New Teacher</DialogTitle>
+              <DialogDescription>Enter the details of the new teacher here.</DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="name">Name</Label>
+                <Input
+                  id="name"
+                  value={newTeacher.name}
+                  onChange={(e) => setNewTeacher({ ...newTeacher, name: e.target.value })}
+                />
               </div>
-              <div className="mt-6 flex justify-end space-x-2">
-                <button 
-                  onClick={() => setIsAddModalOpen(false)}
-                  className="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 transition"
-                >
-                  Cancel
-                </button>
-                <button 
-                  onClick={handleAddTeacher}
-                  className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
-                >
-                  Add Teacher
-                </button>
+              <div>
+                <Label htmlFor="phone">Phone Number</Label>
+                <Input
+                  id="phone"
+                  value={newTeacher.phone_number}
+                  onChange={(e) => setNewTeacher({ ...newTeacher, phone_number: e.target.value })}
+                />
               </div>
             </div>
-          </div>
-        )}
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setIsAddModalOpen(false)}>
+                Cancel
+              </Button>
+              <Button onClick={handleAddTeacher}>Add Teacher</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
         {/* Edit Teacher Modal */}
-        {isEditModalOpen && selectedTeacher && (
-          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-30">
-            <div className="bg-white p-6 rounded shadow-lg w-full max-w-md">
-              <h2 className="text-xl font-bold text-gray-800 mb-4 border-b pb-2">Edit Teacher</h2>
+        <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Edit Teacher</DialogTitle>
+              <DialogDescription>Update the teacher's information here.</DialogDescription>
+            </DialogHeader>
+            {selectedTeacher && (
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
-                  <input
-                    type="text"
-                    className="w-full p-2 border rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  <Label htmlFor="edit-name">Name</Label>
+                  <Input
+                    id="edit-name"
                     value={selectedTeacher.name}
                     onChange={(e) => setSelectedTeacher({ ...selectedTeacher, name: e.target.value })}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
-                  <input
-                    type="text"
-                    className="w-full p-2 border rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  <Label htmlFor="edit-phone">Phone Number</Label>
+                  <Input
+                    id="edit-phone"
                     value={selectedTeacher.phone_number}
                     onChange={(e) => setSelectedTeacher({ ...selectedTeacher, phone_number: e.target.value })}
                   />
                 </div>
               </div>
-              <div className="mt-6 flex justify-end space-x-2">
-                <button 
-                  onClick={() => setIsEditModalOpen(false)}
-                  className="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 transition"
-                >
-                  Cancel
-                </button>
-                <button 
-                  onClick={handleEditTeacher}
-                  className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
-                >
-                  Save Changes
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
+            )}
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setIsEditModalOpen(false)}>
+                Cancel
+              </Button>
+              <Button onClick={handleEditTeacher}>Save Changes</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </main>
     </div>
-  );
+  )
 }
+

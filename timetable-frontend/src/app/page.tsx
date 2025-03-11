@@ -1,20 +1,25 @@
-"use client";
-import axios from "axios";
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+"use client"
+
+import { useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
+import axios from "axios"
+import { motion } from "framer-motion"
+import { ChevronRight, Clock, Calendar, LayoutGrid, Settings } from "lucide-react"
+
+import { Button } from "@/components/ui/button"
+import { Card, CardContent } from "@/components/ui/card"
 
 export default function Home() {
-
-  const [userDetails, setUserDetails] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const router = useRouter();
+  const [userDetails, setUserDetails] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const router = useRouter()
 
   useEffect(() => {
-    const access = localStorage.getItem("access_token");
+    const access = localStorage.getItem("access_token")
 
     if (!access) {
-      setLoading(false);
-      return;
+      setLoading(false)
+      return
     }
 
     axios
@@ -22,194 +27,366 @@ export default function Home() {
         headers: { Authorization: `Bearer ${access}` },
       })
       .then((res) => {
-        setUserDetails(res.data);
-        setLoading(false);
+        setUserDetails(res.data)
+        setLoading(false)
       })
       .catch(() => {
-        setUserDetails(null);
-        setLoading(false);
-      });
-  }, []);
+        setUserDetails(null)
+        setLoading(false)
+      })
+  }, [])
 
   const handleLogout = () => {
-    localStorage.removeItem("access_token");
-    setUserDetails(null);
-    router.push("/user/auth/login"); // Redirect to login after logout
-  };
+    localStorage.removeItem("access_token")
+    setUserDetails(null)
+    router.push("/user/auth/login")
+  }
+
+  const container = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+      },
+    },
+  }
+
+  const item = {
+    hidden: { opacity: 0, y: 20 },
+    show: { opacity: 1, y: 0 },
+  }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 overflow-hidden">
+      {/* Animated Background Elements */}
+      <div className="fixed inset-0 -z-10 overflow-hidden">
+        <motion.div
+          className="absolute -top-[300px] -right-[300px] w-[600px] h-[600px] rounded-full bg-blue-100 opacity-30"
+          animate={{
+            x: [0, 10, 0],
+            y: [0, 15, 0],
+          }}
+          transition={{
+            duration: 8,
+            repeat: Number.POSITIVE_INFINITY,
+            ease: "easeInOut",
+          }}
+        />
+        <motion.div
+          className="absolute -bottom-[200px] -left-[200px] w-[400px] h-[400px] rounded-full bg-indigo-100 opacity-30"
+          animate={{
+            x: [0, -10, 0],
+            y: [0, -15, 0],
+          }}
+          transition={{
+            duration: 7,
+            repeat: Number.POSITIVE_INFINITY,
+            ease: "easeInOut",
+          }}
+        />
+      </div>
+
       {/* Navigation Bar */}
-      <nav className="bg-white shadow-md">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <motion.nav
+        className="bg-white/80 backdrop-blur-md border-b border-slate-200 sticky top-0 z-50"
+        initial={{ y: -100 }}
+        animate={{ y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
             <div className="flex items-center">
-              <span className="text-xl font-semibold text-blue-800">TimeTable Pro</span>
+              <motion.div className="flex items-center gap-2" whileHover={{ scale: 1.05 }}>
+                <div className="w-8 h-8 rounded-md bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-white font-bold">
+                  Q
+                </div>
+                <span className="text-xl font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                  Quickshed
+                </span>
+              </motion.div>
             </div>
-            <div className="flex items-center">
+            <div className="flex items-center gap-2">
               {userDetails ? (
-                <button
-                  onClick={handleLogout}
-                  className="ml-4 px-4 py-2 text-sm font-medium text-white bg-blue-800 rounded hover:bg-blue-700 transition"
-                >
-                  Logout
-                </button>
+                <motion.div whileHover={{ scale: 1.05 }}>
+                  <Button onClick={handleLogout} variant="ghost" className="font-medium">
+                    Logout
+                  </Button>
+                </motion.div>
               ) : (
-                <button
-                  onClick={() => router.push("/user/auth/login")}
-                  className="ml-4 px-4 py-2 text-sm font-medium text-white bg-blue-800 rounded hover:bg-blue-700 transition"
-                >
-                  Login
-                </button>
+                <motion.div whileHover={{ scale: 1.05 }}>
+                  <Button
+                    onClick={() => router.push("/user/auth/login")}
+                    className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white"
+                  >
+                    Login
+                  </Button>
+                </motion.div>
               )}
             </div>
           </div>
         </div>
-      </nav>
+      </motion.nav>
 
-      {/* Main Content */}
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="lg:flex lg:items-center lg:justify-between">
-          {/* Left Column - Text Content */}
-          <div className="lg:w-1/2">
-            <h1 className="text-4xl font-bold text-gray-900 mb-6">
-              Welcome to <span className="text-blue-800">TimeTable Pro</span>
-            </h1>
-            
-            {userDetails ? (
-              <div className="bg-white shadow-lg rounded-lg p-6 mb-6 border-l-4 border-blue-800">
-                <p className="text-lg text-gray-700">
-                  Welcome back, <span className="font-semibold">{userDetails.name}</span>!
-                </p>
-                <p className="mt-2 text-gray-600">
-                  Your timetable planning session is ready to begin.
-                </p>
-                <button
-                  onClick={() => router.push("/dashboard")}
-                  className="mt-4 px-6 py-2 bg-blue-800 text-white rounded hover:bg-blue-700 transition"
-                >
-                  Go to Dashboard
-                </button>
-              </div>
-            ) : (
-              <div className="bg-white shadow-lg rounded-lg p-6 mb-6 border-l-4 border-blue-800">
-                <p className="text-lg text-gray-700">
-                  Please log in to access your timetable tools.
-                </p>
-                <button
-                  onClick={() => router.push("/user/auth/login")}
-                  className="mt-4 px-6 py-2 bg-blue-800 text-white rounded hover:bg-blue-700 transition"
-                >
-                  Login to Continue
-                </button>
-              </div>
-            )}
-            
-            <div className="prose prose-lg mt-6 text-gray-700">
-              <p>
-                TimeTable Pro is a comprehensive solution designed for educational institutions 
-                and organizations that need efficient scheduling. Our platform allows you to 
-                create conflict-free timetables with an intuitive interface and powerful algorithms.
+      {/* Hero Section */}
+      <section className="py-16 md:py-24">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid md:grid-cols-2 gap-12 items-center">
+            {/* Left Column - Text Content */}
+            <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.6 }}>
+              <h1 className="text-4xl md:text-5xl font-bold mb-6 leading-tight">
+                Schedule Smarter with{" "}
+                <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                  Quickshed
+                </span>
+              </h1>
+
+              <p className="text-slate-600 text-lg mb-8 leading-relaxed">
+                Generate conflict-free timetables in seconds with our intelligent scheduling platform. Modern,
+                intuitive, and designed for efficiency.
               </p>
-              <p className="mt-4">
-                With TimeTable Pro, you can easily manage teacher assignments, classroom allocations, 
-                and subject scheduling. Our system automatically detects conflicts and suggests 
-                optimal arrangements based on your specific requirements and constraints.
-              </p>
-            </div>
-            
-            <div className="mt-8 grid grid-cols-2 gap-4">
-              <div className="bg-white p-4 rounded-lg shadow-md border-t-4 border-blue-800">
-                <h3 className="font-semibold text-lg text-gray-800">Easy to Use</h3>
-                <p className="text-gray-600 mt-2">
-                  Simple, intuitive interface designed for quick scheduling
-                </p>
-              </div>
-              <div className="bg-white p-4 rounded-lg shadow-md border-t-4 border-blue-800">
-                <h3 className="font-semibold text-lg text-gray-800">Conflict Detection</h3>
-                <p className="text-gray-600 mt-2">
-                  Automatically identifies and resolves scheduling conflicts
-                </p>
-              </div>
-              <div className="bg-white p-4 rounded-lg shadow-md border-t-4 border-blue-800">
-                <h3 className="font-semibold text-lg text-gray-800">Resource Management</h3>
-                <p className="text-gray-600 mt-2">
-                  Efficiently allocate classrooms, labs, and teaching staff
-                </p>
-              </div>
-              <div className="bg-white p-4 rounded-lg shadow-md border-t-4 border-blue-800">
-                <h3 className="font-semibold text-lg text-gray-800">Export Options</h3>
-                <p className="text-gray-600 mt-2">
-                  Download timetables in various formats (PDF, Excel, etc.)
-                </p>
-              </div>
-            </div>
-          </div>
-          
-          {/* Right Column - Image */}
-          <div className="lg:w-1/2 mt-8 lg:mt-0 lg:pl-12">
-            <div className="relative rounded-lg overflow-hidden shadow-xl">
-              <div className="h-96 bg-blue-100 flex items-center justify-center">
-                {/* Replace with your actual image */}
-                <div className="text-center p-4">
-                  <svg className="mx-auto h-24 w-24 text-blue-800" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm-2 14l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z" />
-                  </svg>
-                  <p className="mt-4 text-blue-800 font-semibold">
-                    Note: For the best experience, download and add a calendar illustration image here.
-                  </p>
-                  <p className="mt-2 text-sm text-blue-600">
-                    Recommended: Use a clean, professional timetable/calendar illustration.
-                  </p>
+
+              {userDetails ? (
+                <motion.div
+                  className="mb-8"
+                  whileHover={{ scale: 1.02 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                >
+                  <Card className="border-none shadow-lg bg-gradient-to-r from-blue-50 to-indigo-50 overflow-hidden">
+                    <CardContent className="p-6">
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-white font-bold">
+                          {userDetails.name?.charAt(0) || "U"}
+                        </div>
+                        <div>
+                          <h3 className="font-semibold text-lg">Welcome back, {userDetails.name}!</h3>
+                          <p className="text-slate-600">Continue working on your schedule</p>
+                        </div>
+                      </div>
+                      <Button
+                        onClick={() => router.push("/dashboard")}
+                        className="mt-4 w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white"
+                      >
+                        Go to Dashboard
+                        <ChevronRight className="ml-2 h-4 w-4" />
+                      </Button>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              ) : (
+                <motion.div whileHover={{ scale: 1.05 }} transition={{ type: "spring", stiffness: 400, damping: 10 }}>
+                  <Button
+                    onClick={() => router.push("/user/auth/login")}
+                    className="px-8 py-6 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-lg shadow-lg shadow-blue-200"
+                  >
+                    Get Started
+                    <ChevronRight className="ml-2 h-5 w-5" />
+                  </Button>
+                </motion.div>
+              )}
+            </motion.div>
+
+            {/* Right Column - Animated Illustration */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              className="relative"
+            >
+              <div className="relative aspect-square max-w-md mx-auto">
+                <motion.div
+                  className="absolute inset-0 bg-gradient-to-br from-blue-600/10 to-indigo-600/10 rounded-3xl"
+                  animate={{
+                    scale: [1, 1.03, 1],
+                  }}
+                  transition={{
+                    duration: 4,
+                    repeat: Number.POSITIVE_INFINITY,
+                    ease: "easeInOut",
+                  }}
+                />
+
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="grid grid-cols-3 gap-4 w-4/5 h-4/5">
+                    {[...Array(9)].map((_, i) => (
+                      <motion.div
+                        key={i}
+                        className={`rounded-xl shadow-md ${
+                          [0, 2, 6, 8].includes(i)
+                            ? "bg-white"
+                            : i === 4
+                              ? "bg-gradient-to-br from-blue-600 to-indigo-600"
+                              : "bg-blue-50"
+                        }`}
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{
+                          duration: 0.4,
+                          delay: 0.1 * i,
+                        }}
+                        whileHover={{ scale: 1.05, zIndex: 10 }}
+                      />
+                    ))}
+                  </div>
                 </div>
+
+                <motion.div
+                  className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-16 h-16 rounded-full bg-white shadow-lg flex items-center justify-center"
+                  animate={{
+                    scale: [1, 1.1, 1],
+                  }}
+                  transition={{
+                    duration: 2,
+                    repeat: Number.POSITIVE_INFINITY,
+                    ease: "easeInOut",
+                  }}
+                >
+                  <Clock className="h-8 w-8 text-blue-600" />
+                </motion.div>
               </div>
-            </div>
-            
-            <div className="mt-8 bg-gray-50 rounded-lg p-6 shadow-md">
-              <h3 className="text-xl font-semibold text-gray-800 mb-4">Getting Started</h3>
-              <ol className="list-decimal list-inside text-gray-700 space-y-2">
-                <li>Create an account or log in to your existing account</li>
-                <li>Set up your institution's basic information</li>
-                <li>Add teachers, classrooms, and subjects</li>
-                <li>Define time slots and scheduling constraints</li>
-                <li>Generate your timetable automatically or create it manually</li>
-              </ol>
-            </div>
+            </motion.div>
           </div>
         </div>
-      </div>
-      
-      {/* Footer */}
-      <footer className="bg-gray-800 text-white mt-12">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="md:flex md:items-center md:justify-between">
-            <div>
-              <h3 className="text-xl font-semibold">TimeTable Pro</h3>
-              <p className="mt-2 text-gray-400">Simplifying scheduling for educational institutions</p>
-            </div>
-            <div className="mt-4 md:mt-0">
-              <div className="flex space-x-6">
-                <a href="#" className="text-gray-400 hover:text-white">
-                  Help Center
-                </a>
-                <a href="#" className="text-gray-400 hover:text-white">
-                  Contact Us
-                </a>
-                <a href="#" className="text-gray-400 hover:text-white">
-                  Privacy Policy
-                </a>
-              </div>
-            </div>
-          </div>
-          <div className="mt-8 border-t border-gray-700 pt-8 md:flex md:items-center md:justify-between">
-            <div>
-              <p className="text-gray-400">
-                &copy; {new Date().getFullYear()} TimeTable Pro. All rights reserved.
-              </p>
-            </div>
-          </div>
+      </section>
+
+      {/* Features Section */}
+      <section className="py-16 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="text-center mb-16"
+          >
+            <h2 className="text-3xl font-bold mb-4">
+              Why Choose{" "}
+              <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                Quickshed
+              </span>
+            </h2>
+            <p className="text-slate-600 max-w-2xl mx-auto">
+              Our modern timetable generator combines simplicity with powerful features to make scheduling effortless
+              and efficient.
+            </p>
+          </motion.div>
+
+          <motion.div
+            variants={container}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true }}
+            className="grid md:grid-cols-2 lg:grid-cols-4 gap-8"
+          >
+            {[
+              {
+                title: "Modern Design",
+                description: "Clean interface for intuitive scheduling",
+                icon: <LayoutGrid className="h-6 w-6 text-white" />,
+                color: "from-blue-500 to-blue-600",
+              },
+              {
+                title: "Time-Saving",
+                description: "Create timetables in seconds, not hours",
+                icon: <Clock className="h-6 w-6 text-white" />,
+                color: "from-indigo-500 to-indigo-600",
+              },
+              {
+                title: "Flexible",
+                description: "Adaptable to your specific scheduling needs",
+                icon: <Calendar className="h-6 w-6 text-white" />,
+                color: "from-blue-500 to-blue-600",
+              },
+              {
+                title: "Customizable",
+                description: "Personalize every aspect of your schedule",
+                icon: <Settings className="h-6 w-6 text-white" />,
+                color: "from-indigo-500 to-indigo-600",
+              },
+            ].map((feature, index) => (
+              <motion.div key={index} variants={item} whileHover={{ y: -5 }} className="group">
+                <Card className="h-full border-none shadow-lg hover:shadow-xl transition-shadow duration-300">
+                  <CardContent className="p-6 flex flex-col items-center text-center">
+                    <div
+                      className={`w-12 h-12 rounded-full bg-gradient-to-br ${feature.color} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300`}
+                    >
+                      {feature.icon}
+                    </div>
+                    <h3 className="font-semibold text-lg mb-2">{feature.title}</h3>
+                    <p className="text-slate-600">{feature.description}</p>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))}
+          </motion.div>
         </div>
-      </footer>
+      </section>
+
+      {/* How It Works Section */}
+      <section className="py-16 bg-gradient-to-br from-slate-50 to-slate-100">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="text-center mb-16"
+          >
+            <h2 className="text-3xl font-bold mb-4">How It Works</h2>
+            <p className="text-slate-600 max-w-2xl mx-auto">
+              Getting started with Quickshed is simple and straightforward
+            </p>
+          </motion.div>
+
+          <motion.div
+            variants={container}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true }}
+            className="grid md:grid-cols-3 gap-8"
+          >
+            {[
+              {
+                step: "01",
+                title: "Create Account",
+                description: "Sign up and set up your basic information",
+              },
+              {
+                step: "02",
+                title: "Add Schedule Items",
+                description: "Input your classes, meetings, and activities",
+              },
+              {
+                step: "03",
+                title: "Generate & Share",
+                description: "Create your timetable and share with others",
+              },
+            ].map((step, index) => (
+              <motion.div key={index} variants={item} className="relative">
+                <Card className="h-full border-none shadow-lg bg-white overflow-hidden">
+                  <div className="absolute -right-4 -top-4 w-24 h-24 bg-blue-50 rounded-full opacity-70" />
+                  <CardContent className="p-8 relative">
+                    <span className="text-5xl font-bold text-slate-100">{step.step}</span>
+                    <h3 className="font-semibold text-xl mb-3 mt-2">{step.title}</h3>
+                    <p className="text-slate-600">{step.description}</p>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))}
+          </motion.div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <motion.section
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.8 }}
+        className="py-16 bg-white"
+      >
+      </motion.section>
     </div>
-  );
+  )
 }
+
