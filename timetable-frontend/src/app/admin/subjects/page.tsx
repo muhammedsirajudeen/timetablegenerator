@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { motion } from "framer-motion"
-import { toast } from "react-hot-toast"
+import toast,{ Toaster } from "react-hot-toast"
 import { Plus, Eye, Edit, LogOut } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -349,6 +349,10 @@ export default function ManageSubjects() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+        <Toaster
+          position="top-right"
+          reverseOrder={false}
+        />
       </main>
     </div>
   )

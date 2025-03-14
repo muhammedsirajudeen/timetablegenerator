@@ -3,9 +3,9 @@
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { motion } from "framer-motion"
-import { toast } from "react-hot-toast"
+import toast,{ Toaster } from "react-hot-toast"
 import { validateMobileNumber } from "@/utils/validation"
-import { Plus, Eye, Edit, LogOut } from "lucide-react"
+import { Plus, Eye, Edit, LogOut, BookOpen } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -26,20 +26,30 @@ interface Teacher {
   name: string
   phone_number: string
   department: string
-  subjects: string[]
+  subjects: number[]
+}
+
+interface Subject {
+  id: number
+  semester: number
+  name: string
+  subject_code: string
 }
 
 export default function ManageTeachers() {
   const router = useRouter()
   const [teachers, setTeachers] = useState<Teacher[]>([])
+  const [subjects, setSubjects] = useState<Subject[]>([])
   const [newTeacher, setNewTeacher] = useState({ name: "", phone_number: "" })
   const [selectedTeacher, setSelectedTeacher] = useState<Teacher | null>(null)
   const [isViewModalOpen, setIsViewModalOpen] = useState(false)
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+  const [isAssignModalOpen, setIsAssignModalOpen] = useState(false)
 
   useEffect(() => {
     fetchTeachers()
+    fetchSubjects()
   }, [])
 
   const fetchTeachers = async () => {
@@ -57,6 +67,24 @@ export default function ManageTeachers() {
     } catch (error) {
       toast.error("Error fetching teachers")
       console.error("Error fetching teachers:", error)
+    }
+  }
+
+  const fetchSubjects = async () => {
+    try {
+      const token = localStorage.getItem("access_token")
+      const response = await fetch("http://localhost:8000/api/subjects/", {
+        method: "GET",
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      if (!response.ok) {
+        throw new Error("Failed to fetch subjects")
+      }
+      const data = await response.json()
+      setSubjects(data)
+    } catch (error) {
+      toast.error("Error fetching subjects")
+      console.error("Error fetching subjects:", error)
     }
   }
 
@@ -143,6 +171,68 @@ export default function ManageTeachers() {
     }
   }
 
+  const handleAssignSubject = async (subjectId: number) => {
+    if (!selectedTeacher) return
+    try {
+      const token = localStorage.getItem("access_token")
+      const response = await fetch("http://localhost:8000/api/teachers/assign/", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-type": "application/json",
+        },
+        body: JSON.stringify({ teacher: selectedTeacher.id, subject: subjectId }),
+      })
+
+      if (!response.ok) {
+        throw new Error("Failed to assign subject")
+      }
+      setSelectedTeacher((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          subjects: [...prev.subjects, subjectId],
+        };
+      });
+      toast.success("Subject assigned successfully")
+      fetchTeachers() // Refresh teacher data
+    } catch (error) {
+      toast.error("Error assigning subject")
+      console.error("Error assigning subject:", error)
+    }
+  }
+
+  const handleUnassignSubject = async (subjectId: number) => {
+    if (!selectedTeacher) return
+    try {
+      const token = localStorage.getItem("access_token")
+      const response = await fetch("http://localhost:8000/api/teachers/assign/", {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-type": "application/json",
+        },
+        body: JSON.stringify({ teacher: selectedTeacher.id, subject: subjectId }),
+      })
+
+      if (!response.ok) {
+        throw new Error("Failed to unassign subject")
+      }
+      setSelectedTeacher((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          subjects: prev.subjects.filter((id) => id !== subjectId),
+        };
+      });
+      toast.success("Subject unassigned successfully")
+      fetchTeachers() // Refresh teacher data
+    } catch (error) {
+      toast.error("Error unassigning subject")
+      console.error("Error unassigning subject:", error)
+    }
+  }
+
   const handleLogout = () => {
     localStorage.removeItem("access_token")
     router.push("/admin/auth/login")
@@ -225,6 +315,16 @@ export default function ManageTeachers() {
                             }}
                           >
                             <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              setSelectedTeacher(teacher)
+                              setIsAssignModalOpen(true)
+                            }}
+                          >
+                            <BookOpen className="h-4 w-4" />
                           </Button>
                         </div>
                       </TableCell>
@@ -336,8 +436,66 @@ export default function ManageTeachers() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+
+        {/* Assign/Unassign Subject Modal */}
+        <Dialog open={isAssignModalOpen} onOpenChange={setIsAssignModalOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Manage Subjects for {selectedTeacher?.name}</DialogTitle>
+              <DialogDescription>Assign or unassign subjects to this teacher.</DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Semester</TableHead>
+                    <TableHead>Subject Name</TableHead>
+                    <TableHead>Subject Code</TableHead>
+                    <TableHead>Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {subjects.map((subject) => (
+                    <TableRow key={subject.id}>
+                      <TableCell>{subject.semester}</TableCell>
+                      <TableCell>{subject.name}</TableCell>
+                      <TableCell>{subject.subject_code}</TableCell>
+                      <TableCell>
+                        {selectedTeacher?.subjects?.includes(subject.id) ? (
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => handleUnassignSubject(subject.id)}
+                          >
+                            Unassign
+                          </Button>
+                        ) : (
+                          <Button
+                            variant="default"
+                            size="sm"
+                            onClick={() => handleAssignSubject(subject.id)}
+                          >
+                            Assign
+                          </Button>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setIsAssignModalOpen(false)}>
+                Close
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+        <Toaster
+          position="top-right"
+          reverseOrder={false}
+        />
       </main>
     </div>
   )
 }
-
