@@ -5,7 +5,7 @@ from django.contrib import admin
 from .models import Timetable,Teachers,Subjects,Teacher_Subject
 @admin.register(Timetable)
 class TimetableAdmin(admin.ModelAdmin):
-    list_display = ('day', 'time_slot', 'subject','semester')
+    list_display = ('day', 'time_slot', 'subject','semester','teacher')
     list_filter = ('day',)
 
 
