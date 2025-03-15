@@ -8,8 +8,6 @@ django = "*"
 djangorestframework = "*"
 djangorestframework-simplejwt = "*"
 faker = "*"
-django-cors-headers = "*"
-
 
 [dev-packages]
 
