@@ -3,26 +3,25 @@
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from "react"
 import axios from "axios"
-import { Eye, EyeOff } from "lucide-react"
+import { Eye, EyeOff, User,Shield } from "lucide-react"
 import Link from "next/link"
 import { ToastContainer, toast } from 'react-toastify';
+import "react-toastify/dist/ReactToastify.css";
 
-export default function LoginPage() {
-
-  
-
+export default function UserLoginPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const router = useRouter();
+  const [loginType, setLoginType] = useState("user")
 
-  useEffect(()=>{
+  useEffect(() => {
     const access = localStorage.getItem("access_token")
-
-    if(access){
+    if (access) {
       router.push("/")
     }
-  },[])
+  }, [])
+
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword)
   }
@@ -34,61 +33,81 @@ export default function LoginPage() {
     const userData = { email, password }
     try {
       const response = await axios.post("http://127.0.0.1:8000/api/login/", userData)
-      
       const { access, refresh } = response.data;
-      
-      
-        
+
       localStorage.setItem('access_token', access)
       localStorage.setItem('refresh_token', refresh)
-        
-      
-        router.push("/");
-  
+      router.push("/");
     } catch (error) {
       toast.error("Login failed. Please check your credentials.");
     }
   }
+  const handleLoginTypeChange = (type: string) => {
+    setLoginType(type)
+    if (type === "admin") {
+      router.push("/admin/auth/login")
+    }
+  }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-black text-white p-4">
-      <div className="w-full max-w-md space-y-8 bg-gray-900 p-8 rounded-lg shadow-lg">
+    <div
+      className="min-h-screen flex items-center justify-center p-4 bg-cover bg-center bg-no-repeat"
+      style={{ backgroundImage: "url('/564ce10c-0b42-4589-9f58-63cb5e701709.jpeg')" }}
+    >
+      <div className="absolute inset-0 bg-black bg-opacity-60"></div>
+
+      <div className="w-full max-w-md space-y-8 bg-gray-900 p-8 rounded-lg shadow-lg backdrop-blur-sm bg-opacity-80 z-10">
         <div className="text-center">
-          <h1 className="text-3xl font-bold">Login</h1>
-          <p className="mt-2 text-sm text-gray-400">Please enter your credentials to continue</p>
+          <h1 className="text-3xl font-bold text-white">QuickShed</h1>
+          <p className="mt-2 text-sm text-gray-300">Login to continue</p>
+        </div>
+        <div className="flex justify-center space-x-4 mt-6">
+          <button
+            onClick={() => handleLoginTypeChange("admin")}
+            className={`flex flex-col items-center px-6 py-3 rounded-lg transition-all ${
+              loginType === "admin" ? "bg-blue-600 text-white" : "bg-gray-800 text-gray-300 hover:bg-gray-700"
+            }`}
+          >
+            <Shield className="h-8 w-8 mb-2" />
+            <span className="text-sm font-medium">Admin</span>
+          </button>
+
+          <button
+            onClick={() => handleLoginTypeChange("user")}
+            className={`flex flex-col items-center px-6 py-3 rounded-lg transition-all ${
+              loginType === "user" ? "bg-blue-600 text-white" : "bg-gray-800 text-gray-300 hover:bg-gray-700"
+            }`}
+          >
+            <User className="h-8 w-8 mb-2" />
+            <span className="text-sm font-medium">User</span>
+          </button>
         </div>
 
         <form onSubmit={handleSubmit} className="mt-8 space-y-6">
-          {/* Email Input */}
           <div className="space-y-4">
             <div>
-              <label htmlFor="email" className="block text-sm font-medium">Email</label>
-              <div className="mt-1">
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  required
-                  className="w-full px-4 py-2 border rounded-md bg-gray-800 text-white focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Enter your Email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                />
-              </div>
+              <label htmlFor="email" className="block text-sm font-medium text-white">Email</label>
+              <input
+                id="email"
+                name="email"
+                type="email"
+                required
+                className="w-full px-4 py-2 border rounded-md bg-gray-800 text-white border-gray-700 focus:ring-blue-500 focus:border-blue-500"
+                placeholder="Enter your Email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
             </div>
 
-            {/* Password Input */}
             <div>
-              <div className="flex items-center justify-between">
-                <label htmlFor="password" className="block text-sm font-medium">Password</label>
-              </div>
+              <label htmlFor="password" className="block text-sm font-medium text-white">Password</label>
               <div className="mt-1 relative">
                 <input
                   id="password"
                   name="password"
                   type={showPassword ? "text" : "password"}
                   required
-                  className="w-full px-4 py-2 border rounded-md bg-gray-800 text-white focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-4 py-2 border rounded-md bg-gray-800 text-white border-gray-700 focus:ring-blue-500 focus:border-blue-500"
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -106,18 +125,16 @@ export default function LoginPage() {
             </div>
           </div>
 
-          {/* Submit Button */}
           <div>
             <button
               type="submit"
-              className="w-full py-2 px-4 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              className="w-full py-3 px-4 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
             >
               Log In
             </button>
           </div>
         </form>
 
-        {/* Sign Up Link */}
         <div className="text-center mt-4">
           <p className="text-sm text-gray-400">
             Don&apos;t have an account? {" "}

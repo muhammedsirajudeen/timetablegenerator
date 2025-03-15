@@ -13,7 +13,7 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
-  const [loginType, setLoginType] = useState("admin") // Default to admin login
+  const [loginType, setLoginType] = useState("admin")
   const router = useRouter()
 
   useEffect(() => {
@@ -150,10 +150,6 @@ export default function LoginPage() {
             </button>
           </div>
         </form>
-
-        <div className="mt-4 text-center">
-          <p className="text-sm text-gray-400">Need help? Contact support</p>
-        </div>
       </div>
       <ToastContainer />
     </div>
