@@ -20,6 +20,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
+import { AdminSidebar } from "@/components/admin-sidebar"
 
 interface Teacher {
   id: number
@@ -241,31 +242,7 @@ export default function ManageTeachers() {
   return (
     <div className="flex h-screen bg-gradient-to-br from-slate-50 to-slate-100 overflow-hidden">
       {/* Sidebar */}
-      <motion.aside
-        initial={{ x: -300 }}
-        animate={{ x: 0 }}
-        transition={{ duration: 0.5 }}
-        className="w-64 bg-white shadow-lg p-6 fixed h-screen flex flex-col"
-      >
-        <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-          Admin Panel
-        </h2>
-        <nav className="mt-6 flex flex-col gap-2">
-          <Button variant="ghost" className="justify-start" onClick={() => router.push("/admin/home")}>
-            Admin Dashboard
-          </Button>
-          <Button variant="secondary" className="justify-start">
-            Manage Teachers
-          </Button>
-          <Button variant="ghost" className="justify-start" onClick={() => router.push("/admin/subjects")}>
-            Manage Subjects
-          </Button>
-        </nav>
-        <Button variant="outline" className="mt-auto" onClick={handleLogout}>
-          <LogOut className="mr-2 h-4 w-4" /> Logout
-        </Button>
-      </motion.aside>
-
+      <AdminSidebar onLogout={handleLogout} />
       {/* Main Content */}
       <main className="ml-64 flex-1 p-6 overflow-auto">
         <motion.div
