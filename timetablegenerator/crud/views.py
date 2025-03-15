@@ -1,11 +1,8 @@
-from django.shortcuts import render
-from rest_framework import generics
 from .models import Teachers,Subjects,Teacher_Subject
 from .serializers import TeachersSerializer,SubjectSerializer,TeacherSubjectSerializer
 from rest_framework import viewsets
 from rest_framework.permissions import IsAdminUser
 # Create your views here.
-from django.http import JsonResponse
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.permissions import IsAdminUser
