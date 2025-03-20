@@ -166,8 +166,7 @@ export default function Home() {
                       <Button
                         onClick={() => router.push("/user/dashboard")}
                         className="mt-4 w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white"
-                      >
-                        Go to Dashboard
+                      >Go to Dashboard
                         <ChevronRight className="ml-2 h-4 w-4" />
                       </Button>
                     </CardContent>
