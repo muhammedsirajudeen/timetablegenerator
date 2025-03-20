@@ -21,7 +21,7 @@ class TimetableSerializer(serializers.ModelSerializer):
     subject_id = serializers.PrimaryKeyRelatedField(source='subject', read_only=True)  # For ID
     
     teacher = serializers.StringRelatedField()
-    teacher_id = serializers.PrimaryKeyRelatedField(source='teacher', read_only=True)  # Use this to represent the related teacher
+    teacher_id = serializers.PrimaryKeyRelatedField(source='teacher', read_only=True)  # Use this to represent the related teacher change this
 
     class Meta:
         model = Timetable
