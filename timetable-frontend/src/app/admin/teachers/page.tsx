@@ -421,7 +421,7 @@ export default function ManageTeachers() {
               <DialogTitle>Manage Subjects for {selectedTeacher?.name}</DialogTitle>
               <DialogDescription>Assign or unassign subjects to this teacher.</DialogDescription>
             </DialogHeader>
-            <div className="space-y-4">
+            <div className="max-h-60 overflow-y-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
