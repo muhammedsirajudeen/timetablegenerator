@@ -17,9 +17,12 @@ class TeacherSubjectSerializer(serializers.ModelSerializer):
         fields='__all__'
 
 class TimetableSerializer(serializers.ModelSerializer):
-    subject = serializers.StringRelatedField()  # Use this to represent the related subject
-    teacher = serializers.StringRelatedField()  # Use this to represent the related teacher
+    subject = serializers.StringRelatedField()  # For string representation
+    subject_id = serializers.PrimaryKeyRelatedField(source='subject', read_only=True)  # For ID
+    
+    teacher = serializers.StringRelatedField()
+    teacher_id = serializers.PrimaryKeyRelatedField(source='teacher', read_only=True)  # Use this to represent the related teacher
 
     class Meta:
         model = Timetable
-        fields = ['semester', 'day', 'time_slot', 'subject', 'teacher']
+        fields = ['semester', 'day', 'time_slot', 'subject_id' ,'subject', 'teacher','teacher_id']

@@ -1,10 +1,9 @@
 "use client"
 
-import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { motion } from "framer-motion"
-import toast, { Toaster } from "react-hot-toast"
-import { Calendar, ArrowLeft, RefreshCw } from "lucide-react"
+import { Toaster } from "react-hot-toast"
+import { ArrowLeft } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -17,20 +16,10 @@ interface SemesterTimetablePageProps {
 
 export function SemesterTimetablePage({ semesterNumber }: SemesterTimetablePageProps) {
   const router = useRouter()
-  const [isGenerating, setIsGenerating] = useState(false)
 
   const handleLogout = () => {
     localStorage.removeItem("access_token")
     router.push("/admin/auth/login")
-  }
-
-  const handleGenerateTimetable = () => {
-    setIsGenerating(true)
-    // Simulate API call
-    setTimeout(() => {
-      setIsGenerating(false)
-      toast.success("Timetable generated successfully!")
-    }, 2000)
   }
 
   return (
@@ -54,21 +43,6 @@ export function SemesterTimetablePage({ semesterNumber }: SemesterTimetablePageP
               </Button>
               <h1 className="text-3xl font-bold text-gray-800">Semester {semesterNumber} Timetable</h1>
             </div>
-            <Button
-              onClick={handleGenerateTimetable}
-              disabled={isGenerating}
-              className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white"
-            >
-              {isGenerating ? (
-                <>
-                  <RefreshCw className="mr-2 h-4 w-4 animate-spin" /> Generating...
-                </>
-              ) : (
-                <>
-                  <Calendar className="mr-2 h-4 w-4" /> Generate Timetable
-                </>
-              )}
-            </Button>
           </div>
 
           <Card>
@@ -76,7 +50,7 @@ export function SemesterTimetablePage({ semesterNumber }: SemesterTimetablePageP
               <CardTitle>Weekly Schedule</CardTitle>
             </CardHeader>
             <CardContent>
-              <TimetableGrid />
+              <TimetableGrid semesterNumber={semesterNumber}/>
             </CardContent>
           </Card>
         </motion.div>
