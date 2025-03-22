@@ -362,15 +362,15 @@ export default function Home() {
               },
             ].map((step, index) => (
               <motion.div key={index} variants={item} className="relative">
-                <Card className="h-full border-none shadow-lg bg-white overflow-hidden">
-                  <div className="absolute -right-4 -top-4 w-24 h-24 bg-blue-50 rounded-full opacity-70" />
-                  <CardContent className="p-8 relative">
-                    <span className="text-5xl font-bold text-slate-100">{step.step}</span>
-                    <h3 className="font-semibold text-xl mb-3 mt-2">{step.title}</h3>
-                    <p className="text-slate-600">{step.description}</p>
-                  </CardContent>
-                </Card>
-              </motion.div>
+              <Card className="h-full border-none shadow-lg bg-white overflow-hidden">
+                <div className="absolute -right-4 -top-4 w-24 h-24 bg-blue-50 rounded-full opacity-70" />
+                <CardContent className="p-8 relative">
+                <span className="text-5xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">{step.step}</span>
+                  <h3 className="font-semibold text-xl mb-3 mt-2">{step.title}</h3>
+                  <p className="text-slate-600">{step.description}</p>
+                </CardContent>
+              </Card>
+            </motion.div>
             ))}
           </motion.div>
         </div>
