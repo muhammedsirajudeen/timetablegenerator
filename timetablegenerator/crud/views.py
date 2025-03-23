@@ -110,10 +110,10 @@ class RemoveTeacherAndSubjectView(APIView):
         semester = request.data.get("semester")
         day = request.data.get("day")
         time_slot = request.data.get("time_slot")
-        
+        grade=request.data("grade")
         # Find the specific timetable entry
         timetable_entry = Timetable.objects.filter(
-            semester=semester, day=day, time_slot=time_slot).first()
+            semester=semester, day=day, time_slot=time_slot,grade=grade).first()
 
         if timetable_entry:
             timetable_entry.subject = None
@@ -130,10 +130,10 @@ class RemoveTeacherView(APIView):
         semester = request.data.get("semester")
         day = request.data.get("day")
         time_slot = request.data.get("time_slot")
-        
+        grade=request.data.get("grade")
         # Find the specific timetable entry
         timetable_entry = Timetable.objects.filter(
-            semester=semester, day=day, time_slot=time_slot).first()
+            semester=semester, day=day, time_slot=time_slot,grade=grade).first()
 
         if timetable_entry:
             timetable_entry.teacher = None
@@ -149,6 +149,7 @@ class AddTeacherAndSubjectView(APIView):
         semester = request.data.get("semester")
         day = request.data.get("day")
         time_slot = request.data.get("time_slot")
+        grade=request.data.get("grade")
         subject_id = request.data.get("subject_id")
         teacher_id = request.data.get("teacher_id")
         
@@ -157,7 +158,7 @@ class AddTeacherAndSubjectView(APIView):
         
         # Find or create the specific timetable entry
         timetable_entry, created = Timetable.objects.get_or_create(
-            semester=semester, day=day, time_slot=time_slot)
+            semester=semester, day=day, time_slot=time_slot,grade=grade)
         
         timetable_entry.subject = subject
         timetable_entry.teacher = teacher
@@ -186,10 +187,11 @@ class AddTeacherToTimetableView(APIView):
             semester = request.data.get("semester")
             day = request.data.get("day")
             time_slot = request.data.get("time_slot")
+            grade=request.data.get(("grade"))
             teacher_id = request.data.get("teacher_id")
             
             # Check if all required data is provided
-            if not semester or not day or not time_slot or not teacher_id:
+            if not semester or not day or not time_slot or not teacher_id or not grade:
                 return Response({"error": "Missing required fields."}, status=status.HTTP_400_BAD_REQUEST)
 
             # Check if the teacher exists
@@ -202,7 +204,8 @@ class AddTeacherToTimetableView(APIView):
             timetable_entry = Timetable.objects.filter(
                 semester=semester,
                 day=day,
-                time_slot=time_slot
+                time_slot=time_slot,
+                grade=grade
             ).first()
 
             if timetable_entry is None:
@@ -226,9 +229,10 @@ class AddSubjectToTimetableView(APIView):
             semester = request.data.get("semester")
             day = request.data.get("day")
             time_slot = request.data.get("time_slot")
+            grade=request.data.get("grade")
             subject_id = request.data.get("subject_id")
 
-            if not semester or not day or not time_slot or not subject_id:
+            if not semester or not day or not time_slot or not subject_id or not grade:
                 return Response({"error": "Missing required fields."}, status=status.HTTP_400_BAD_REQUEST)
 
             # Check if the subject exists
@@ -241,7 +245,8 @@ class AddSubjectToTimetableView(APIView):
             timetable_entry = Timetable.objects.filter(
                 semester=semester,
                 day=day,
-                time_slot=time_slot
+                time_slot=time_slot,
+                grade=grade
             ).first()
 
             if timetable_entry is None:
@@ -265,15 +270,16 @@ class RemoveSubjectFromTimetableView(APIView):
             semester = request.data.get("semester")
             day = request.data.get("day")
             time_slot = request.data.get("time_slot")
-
-            if not semester or not day or not time_slot:
+            grade=request.data.get("grade")
+            if not semester or not day or not time_slot or not grade:
                 return Response({"error": "Missing required fields."}, status=status.HTTP_400_BAD_REQUEST)
 
             # Find the timetable entry for the given semester, day, and time slot
             timetable_entry = Timetable.objects.filter(
                 semester=semester,
                 day=day,
-                time_slot=time_slot
+                time_slot=time_slot,
+                grade=grade
             ).first()
 
             if timetable_entry is None:
@@ -290,25 +296,27 @@ class RemoveSubjectFromTimetableView(APIView):
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
         
+
 class GetTimetableBySemesterView(APIView):
     def get(self, request, *args, **kwargs):
         try:
-            # Get the semester from query params
+            # Get semester and grade from query parameters
             semester = request.query_params.get('semester')
+            grade = request.query_params.get('grade')  # Grade represents division
 
-            if not semester:
-                return Response({"error": "Semester is required."}, status=status.HTTP_400_BAD_REQUEST)
+            if not semester or not grade:
+                return Response({"error": "Both 'semester' and 'grade' are required."}, status=status.HTTP_400_BAD_REQUEST)
 
             try:
                 semester = int(semester)
             except ValueError:
                 return Response({"error": "Invalid semester value. It should be an integer."}, status=status.HTTP_400_BAD_REQUEST)
 
-            # Fetch all timetable entries for the given semester
-            timetable_entries = Timetable.objects.filter(semester=semester)
+            # Fetch timetable entries based on semester and grade
+            timetable_entries = Timetable.objects.filter(semester=semester, grade=grade)
 
             if not timetable_entries.exists():
-                return Response({"message": f"No timetable entries found for Semester {semester}."}, status=status.HTTP_404_NOT_FOUND)
+                return Response({"message": f"No timetable entries found for Semester {semester}, Grade {grade}."}, status=status.HTTP_404_NOT_FOUND)
 
             # Custom sort order for days of the week
             day_order = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']

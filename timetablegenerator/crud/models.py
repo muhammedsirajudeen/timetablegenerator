@@ -52,11 +52,12 @@ class Timetable(models.Model):
     semester = models.IntegerField()
     day = models.CharField(max_length=10, choices=DAY_CHOICES)
     time_slot = models.CharField(max_length=15, choices=TIME_SLOTS)
+    grade= models.CharField(max_length=1,choices=[('A','A'),('B','B'),('C','C')])
     subject = models.ForeignKey(Subjects, on_delete=models.CASCADE, null=True, blank=True)
     teacher = models.ForeignKey(Teachers, on_delete=models.CASCADE, null=True, blank=True)
 
     class Meta:
-        unique_together = ('semester', 'day', 'time_slot')
+        unique_together = ('semester', 'day', 'time_slot','grade')
 
     def __str__(self):
         return f"Sem {self.semester}: {self.day} - {self.time_slot} - {self.subject} ({self.teacher})"

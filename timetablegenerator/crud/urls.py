@@ -2,7 +2,8 @@ from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from .views import TeacherViewSet,SubjectViewSet,TeacherSubjectViewSet,PopulateTimetableView
 from django.urls import path
-
+from .management.commands.generate_timetable import SEMESTER_DIVISIONS
+from django.http import JsonResponse
 from .views import (
     RemoveTeacherAndSubjectView,
     RemoveTeacherView,
@@ -37,6 +38,6 @@ urlpatterns = [
     # New endpoint to remove a subject from a specific timetable slot
     path('remove_subject_from_timetable/', RemoveSubjectFromTimetableView.as_view(), name='remove_subject_from_timetable'),
     path('get_timetable_by_semester/', GetTimetableBySemesterView.as_view(), name='get_timetable_by_semester'),
-    
+    path('get_structure/', lambda request: JsonResponse(SEMESTER_DIVISIONS, safe=False)),
 
 ]

@@ -2,6 +2,7 @@ from django.core.management.base import BaseCommand
 from faker import Faker
 from crud.models import Teachers, Subjects, Teacher_Subject  # Adjust the import based on your app structure
 from random import choice, sample
+from .generate_timetable import SEMESTER_DIVISIONS
 import datetime
 
 class Command(BaseCommand):
