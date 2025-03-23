@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Printer, X, RefreshCw } from "lucide-react"
 import { SubjectTeacherSelector } from "./subject-teacher-selector"
 import toast from "react-hot-toast"
+import { useSearchParams } from "next/navigation"
 
 interface TimetableGridProps {
   semesterNumber?: number
@@ -14,6 +15,7 @@ interface TimetableGridProps {
 export function TimetableGrid({ semesterNumber = 3 }: TimetableGridProps) {
   const [timetableData, setTimetableData] = useState<any[]>([])
   const [loading, setLoading] = useState<boolean>(true)
+  const searchParams=useSearchParams()
   const [refreshing, setRefreshing] = useState<boolean>(false)
   const [selectedCell, setSelectedCell] = useState<{
     day: string
@@ -30,7 +32,7 @@ export function TimetableGrid({ semesterNumber = 3 }: TimetableGridProps) {
     setLoading(true)
     try {
       const token = localStorage.getItem("access_token")
-      const response = await fetch(`http://localhost:8000/api/get_timetable_by_semester/?semester=${semesterNumber}`,{
+      const response = await fetch(`http://localhost:8000/api/get_timetable_by_semester/?semester=${semesterNumber}&grade=${searchParams.get('grade')}`,{
         headers: {
           Authorization: `Bearer ${token}`,
         }
@@ -75,6 +77,7 @@ export function TimetableGrid({ semesterNumber = 3 }: TimetableGridProps) {
           semester: semesterNumber,
           day,
           time_slot: timeSlot,
+          grade:searchParams.get('grade')
         }),
       })
 
@@ -89,6 +92,7 @@ export function TimetableGrid({ semesterNumber = 3 }: TimetableGridProps) {
           semester: semesterNumber,
           day,
           time_slot: timeSlot,
+          grade:searchParams.get('grade')
         }),
       })
 

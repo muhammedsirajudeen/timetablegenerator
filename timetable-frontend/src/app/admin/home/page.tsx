@@ -3,22 +3,22 @@
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { motion } from "framer-motion"
-import { BookOpen, Users, Clock, Calendar, Trash, RefreshCw } from "lucide-react"
+import { BookOpen, Users} from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { AdminSidebar } from "@/components/admin-sidebar"
 import { Button } from "@/components/ui/button"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import toast, { Toaster } from "react-hot-toast"
 
 export default function AdminDashboard() {
   const router = useRouter()
-  const semesters = [3, 4, 5, 6,7,8]
-  const [isGenerating, setIsGenerating] = useState(false)
-  const [isRemoving, setIsRemoving] = useState(false)
-  const [confirmAction, setConfirmAction] = useState<(() => Promise<void>) | null>(null)
   const [teacherCount, setTeacherCount] = useState<number | null>(null)
   const [subjectCount, setSubjectCount] = useState<number | null>(null)
+  const [structure, setStructure] = useState<Record<string, string[]> | null>(null)
 
+  const handleLogout = () => {
+    localStorage.removeItem("access_token")
+    router.push("/admin/auth/login")
+  }
   useEffect(() => {
     const fetchCounts = async () => {
       try {
@@ -37,6 +37,13 @@ export default function AdminDashboard() {
         })
         const subjects = await subjectRes.json()
         setSubjectCount(subjects.length)
+
+        // Fetch semester structure
+        const structureRes = await fetch("http://localhost:8000/api/get_structure/", {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+        const structureData = await structureRes.json()
+        setStructure(structureData)
       } catch (error) {
         console.error("Error fetching data:", error)
         toast.error("Failed to fetch data")
@@ -46,53 +53,35 @@ export default function AdminDashboard() {
     fetchCounts()
   }, [])
 
-  const handleLogout = () => {
-    localStorage.removeItem("access_token")
-    router.push("/admin/auth/login")
+  const handleNavigate = (semester: string, grade: string) => {
+    router.push(`/admin/semester/${semester}?grade=${grade}`)
   }
-
-  const handleGenerateTimetable = () => {
-    setConfirmAction(() => async () => {
-      setIsGenerating(true)
-      setConfirmAction(null)
-      try {
-        const token = localStorage.getItem("access_token")
-        await fetch("http://localhost:8000/api/populate-timetable/", {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-type": "application/json",
-          },
-        })
-        toast.success("Timetable generated successfully!")
-      } catch (error) {
-        console.error("Error generating timetable:", error)
-        toast.error("Error generating timetable")
-      }
-      setIsGenerating(false)
-    })
+  const removeAllHandler=async ()=>{
+    try {      
+      const token=localStorage.getItem('access_token')
+      await fetch("http://localhost:8000/api/remove_all_teacher_subject/", {
+        method:'POST',
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      toast.success('Successfully removed',{style:{backgroundColor:"green",color:"white"}})
+    } catch (error) {
+      console.log(error)
+      toast.error('Error removing',{style:{backgroundColor:"red",color:"white"}})
+    }
   }
-
-  const handleRemoveAll = () => {
-    setConfirmAction(() => async () => {
-      setIsRemoving(true)
-      setConfirmAction(null)
-      try {
-        const token = localStorage.getItem("access_token")
-        await fetch("http://localhost:8000/api/remove_all_teacher_subject/", {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-type": "application/json",
-          },
-        })
-        toast.success("All teacher and subjects removed successfully!")
-      } catch (error) {
-        console.error("Error removing all teacher subjects:", error)
-        toast.error("Error removing all teacher and subjects")
-      }
-      setIsRemoving(false)
-    })
+  const populateHandler=async ()=>{
+    try {      
+      const token=localStorage.getItem('access_token')
+      await fetch("http://localhost:8000/api/populate-timetable/", {
+        method:'POST',
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      toast.success('Successfully populated',{style:{backgroundColor:"green",color:"white"}})
+    } catch (error) {
+      console.log(error)
+      toast.error('Error removing',{style:{backgroundColor:"red",color:"white"}})
+    }
+    
   }
 
   return (
@@ -138,7 +127,8 @@ export default function AdminDashboard() {
               </CardContent>
             </Card>
           </div>
-
+          <Button onClick={()=>populateHandler()} className="m-4" >Populate</Button>
+          <Button onClick={()=>removeAllHandler()}  className="m-4" >Remove</Button>
           <Card className="mb-8">
             <CardHeader>
               <div className="flex justify-between items-center">
@@ -146,49 +136,37 @@ export default function AdminDashboard() {
                   <CardTitle>Semester Timetables</CardTitle>
                   <CardDescription>Select a semester to view or generate its timetable</CardDescription>
                 </div>
-                <div className="flex gap-4">
-                  <Button onClick={handleGenerateTimetable} className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white">
-                    {isGenerating ? <RefreshCw className="mr-2 h-4 w-4 animate-spin" /> : <Calendar className="mr-2 h-4 w-4" />} {isGenerating ? "Generating..." : "Generate Timetable"}
-                  </Button>
-                  <Button onClick={handleRemoveAll} className="bg-red-600 text-white">
-                    {isRemoving ? <RefreshCw className="mr-2 h-4 w-4 animate-spin" /> : <Trash className="mr-2 h-4 w-4" />} {isRemoving ? "Removing..." : "Remove All"}
-                  </Button>
-                </div>
               </div>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-                {semesters.map((semester) => (
-                  <motion.div key={semester} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                    <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => router.push(`/admin/semester/${semester}`)}>
-                      <CardContent className="p-6 flex flex-col items-center justify-center">
-                        <Clock className="h-12 w-12 text-blue-600 mb-2" />
-                        <h3 className="text-xl font-semibold text-center">Semester {semester}</h3>
-                        <p className="text-sm text-gray-500 text-center mt-1">View and manage timetable</p>
-                      </CardContent>
-                    </Card>
-                  </motion.div>
-                ))}
+                {structure &&
+                  Object.entries(structure).map(([semester, grades]) => (
+                    <motion.div key={semester} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                      <Card className="cursor-pointer hover:shadow-md transition-shadow">
+                        <CardContent className="p-6">
+                          <h3 className="text-xl font-semibold text-center mb-2">Semester {semester}</h3>
+                          <div className="flex flex-wrap gap-2 justify-center">
+                            {grades.map((grade) => (
+                              <Button
+                                key={grade}
+                                variant="outline"
+                                className="px-4 py-2"
+                                onClick={() => handleNavigate(semester, grade)}
+                              >
+                                Grade {grade}
+                              </Button>
+                            ))}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </motion.div>
+                  ))}
               </div>
             </CardContent>
           </Card>
         </motion.div>
       </main>
-
-      {confirmAction && (
-        <Dialog open={true} onOpenChange={() => setConfirmAction(null)}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Are you sure?</DialogTitle>
-              <DialogDescription>This action cannot be undone.</DialogDescription>
-            </DialogHeader>
-            <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={() => setConfirmAction(null)}>Cancel</Button>
-              <Button className="bg-red-600 text-white" onClick={confirmAction}>Confirm</Button>
-            </div>
-          </DialogContent>
-        </Dialog>
-      )}
       <Toaster position="top-right" />
     </div>
   )

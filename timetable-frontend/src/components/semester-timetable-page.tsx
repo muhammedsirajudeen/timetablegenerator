@@ -1,6 +1,6 @@
 "use client"
 
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { motion } from "framer-motion"
 import { Toaster } from "react-hot-toast"
 import { ArrowLeft } from "lucide-react"
@@ -16,7 +16,7 @@ interface SemesterTimetablePageProps {
 
 export function SemesterTimetablePage({ semesterNumber }: SemesterTimetablePageProps) {
   const router = useRouter()
-
+  const searchParams=useSearchParams()
   const handleLogout = () => {
     localStorage.removeItem("access_token")
     router.push("/admin/auth/login")
@@ -41,7 +41,7 @@ export function SemesterTimetablePage({ semesterNumber }: SemesterTimetablePageP
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Back
               </Button>
-              <h1 className="text-3xl font-bold text-gray-800">Semester {semesterNumber} Timetable</h1>
+              <h1 className="text-3xl font-bold text-gray-800">Semester {semesterNumber} {searchParams.get('grade')} Timetable</h1>
             </div>
           </div>
 

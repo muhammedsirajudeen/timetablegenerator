@@ -6,6 +6,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/componen
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Button } from "@/components/ui/button"
 import { X, Loader2 } from "lucide-react"
+import { useSearchParams } from "next/navigation"
 
 interface SubjectTeacherSelectorProps {
   semester: number
@@ -33,7 +34,7 @@ export function SubjectTeacherSelector({ semester, day, timeSlot, onCancel, onCo
   const [selectedTeacher, setSelectedTeacher] = useState<number | null>(null)
   const [loading, setLoading] = useState<boolean>(false)
   const [filteredSubjects, setFilteredSubjects] = useState<Subject[]>([])
-
+  const searchParams=useSearchParams()
   useEffect(() => {
     const fetchSubjectsAndTeachers = async () => {
       try {
@@ -91,6 +92,7 @@ export function SubjectTeacherSelector({ semester, day, timeSlot, onCancel, onCo
           time_slot: timeSlot,
           subject_id: selectedSubject,
           teacher_id: selectedTeacher,
+          grade:searchParams.get('grade')
         }),
       })
 
