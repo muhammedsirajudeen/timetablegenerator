@@ -3,22 +3,36 @@
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { motion } from "framer-motion"
-import { BookOpen, Users} from "lucide-react"
+import { BookOpen, Users } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { AdminSidebar } from "@/components/admin-sidebar"
 import { Button } from "@/components/ui/button"
 import toast, { Toaster } from "react-hot-toast"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
 
 export default function AdminDashboard() {
   const router = useRouter()
   const [teacherCount, setTeacherCount] = useState<number | null>(null)
   const [subjectCount, setSubjectCount] = useState<number | null>(null)
   const [structure, setStructure] = useState<Record<string, string[]> | null>(null)
+  const [isPopulateDialogOpen, setIsPopulateDialogOpen] = useState(false)
+  const [isRemoveDialogOpen, setIsRemoveDialogOpen] = useState(false)
+  const [isPopulating, setIsPopulating] = useState(false)
+  const [isRemoving, setIsRemoving] = useState(false)
 
   const handleLogout = () => {
     localStorage.removeItem("access_token")
     router.push("/admin/auth/login")
   }
+
   useEffect(() => {
     const fetchCounts = async () => {
       try {
@@ -56,32 +70,43 @@ export default function AdminDashboard() {
   const handleNavigate = (semester: string, grade: string) => {
     router.push(`/admin/semester/${semester}?grade=${grade}`)
   }
-  const removeAllHandler=async ()=>{
-    try {      
-      const token=localStorage.getItem('access_token')
+
+  const removeAllHandler = async () => {
+    try {
+      setIsRemoving(true)
+      setIsRemoveDialogOpen(false)
+
+      const token = localStorage.getItem("access_token")
       await fetch("http://localhost:8000/api/remove_all_teacher_subject/", {
-        method:'POST',
+        method: "POST",
         headers: { Authorization: `Bearer ${token}` },
       })
-      toast.success('Successfully removed',{style:{backgroundColor:"green",color:"white"}})
+      toast.success("Successfully removed")
     } catch (error) {
       console.log(error)
-      toast.error('Error removing',{style:{backgroundColor:"red",color:"white"}})
+      toast.error("Error removing")
+    } finally {
+      setIsRemoving(false)
     }
   }
-  const populateHandler=async ()=>{
-    try {      
-      const token=localStorage.getItem('access_token')
+
+  const populateHandler = async () => {
+    try {
+      setIsPopulating(true)
+      setIsPopulateDialogOpen(false)
+
+      const token = localStorage.getItem("access_token")
       await fetch("http://localhost:8000/api/populate-timetable/", {
-        method:'POST',
+        method: "POST",
         headers: { Authorization: `Bearer ${token}` },
       })
-      toast.success('Successfully populated',{style:{backgroundColor:"green",color:"white"}})
+      toast.success("Successfully populated")
     } catch (error) {
       console.log(error)
-      toast.error('Error removing',{style:{backgroundColor:"red",color:"white"}})
+      toast.error("Error populating")
+    } finally {
+      setIsPopulating(false)
     }
-    
   }
 
   return (
@@ -107,9 +132,7 @@ export default function AdminDashboard() {
               <CardContent>
                 <div className="flex items-center">
                   <Users className="h-8 w-8 text-blue-500 mr-3" />
-                  <span className="text-3xl font-bold">
-                    {teacherCount !== null ? teacherCount : "Loading..."}
-                  </span>
+                  <span className="text-3xl font-bold">{teacherCount !== null ? teacherCount : "Loading..."}</span>
                 </div>
               </CardContent>
             </Card>
@@ -120,15 +143,66 @@ export default function AdminDashboard() {
               <CardContent>
                 <div className="flex items-center">
                   <BookOpen className="h-8 w-8 text-indigo-500 mr-3" />
-                  <span className="text-3xl font-bold">
-                    {subjectCount !== null ? subjectCount : "Loading..."}
-                  </span>
+                  <span className="text-3xl font-bold">{subjectCount !== null ? subjectCount : "Loading..."}</span>
                 </div>
               </CardContent>
             </Card>
           </div>
-          <Button onClick={()=>populateHandler()} className="m-4" >Populate</Button>
-          <Button onClick={()=>removeAllHandler()}  className="m-4" >Remove</Button>
+
+          <div className="flex gap-4 mb-8">
+            {/* Populate Dialog */}
+            <Dialog open={isPopulateDialogOpen} onOpenChange={setIsPopulateDialogOpen}>
+              <DialogTrigger asChild>
+                <Button className="bg-emerald-600 hover:bg-emerald-700 text-white" disabled={isPopulating}>
+                  {isPopulating ? "Populating..." : "Populate Timetable"}
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Populate Timetable</DialogTitle>
+                  <DialogDescription>
+                    This action will automatically populate the timetable with teacher and subject assignments. Are you
+                    sure you want to continue?
+                  </DialogDescription>
+                </DialogHeader>
+                <DialogFooter className="flex gap-2 justify-end">
+                  <Button variant="outline" onClick={() => setIsPopulateDialogOpen(false)}>
+                    Cancel
+                  </Button>
+                  <Button className="bg-emerald-600 hover:bg-emerald-700 text-white" onClick={populateHandler}>
+                    Confirm Populate
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+
+            {/* Remove Dialog */}
+            <Dialog open={isRemoveDialogOpen} onOpenChange={setIsRemoveDialogOpen}>
+              <DialogTrigger asChild>
+                <Button variant="destructive" className="bg-red-600 hover:bg-red-700" disabled={isRemoving}>
+                  {isRemoving ? "Removing..." : "Remove All Assignments"}
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Remove All Assignments</DialogTitle>
+                  <DialogDescription>
+                    This action will remove all teacher and subject assignments from the timetable. This cannot be
+                    undone. Are you sure you want to continue?
+                  </DialogDescription>
+                </DialogHeader>
+                <DialogFooter className="flex gap-2 justify-end">
+                  <Button variant="outline" onClick={() => setIsRemoveDialogOpen(false)}>
+                    Cancel
+                  </Button>
+                  <Button variant="destructive" className="bg-red-600 hover:bg-red-700" onClick={removeAllHandler}>
+                    Confirm Remove
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </div>
+
           <Card className="mb-8">
             <CardHeader>
               <div className="flex justify-between items-center">
@@ -171,3 +245,4 @@ export default function AdminDashboard() {
     </div>
   )
 }
+
