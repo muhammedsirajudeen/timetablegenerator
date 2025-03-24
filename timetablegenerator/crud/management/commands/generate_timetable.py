@@ -2,11 +2,11 @@ from crud.models import Subjects, Timetable
 
 # Define semester-to-division mapping
 SEMESTER_DIVISIONS = {
-    3: ['A'],
+    3: ['A','B'],
     4: ['A','B'],
-    5: ['A', 'B', 'C'],
+    5: ['A', 'B'],
     6: ['A', 'B'],
-    7: ['A'],
+    7: ['A','B'],
     8: ['A', 'B']
 }
 

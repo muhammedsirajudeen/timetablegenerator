@@ -1,7 +1,15 @@
-import { UserTimetablePage } from "./UserTimetablePage"
+"use client";
 
-export default function SemesterPage({ params }: { params: { semester: string } }) {
-  const semesterNumber = parseInt(params.semester, 10)
+import { useParams } from "next/navigation";
+import { UserTimetablePage } from "./UserTimetablePage";
 
-  return <UserTimetablePage semesterNumber={semesterNumber} />
+
+export default function SemesterPage() {
+  const params = useParams();
+  
+  const semester = Number(params.semester);
+
+  if (isNaN(semester)) return <p>Invalid Semester</p>;
+
+  return <UserTimetablePage semesterNumber={semester} />
 }
