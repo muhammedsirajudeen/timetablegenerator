@@ -125,7 +125,7 @@ export function TimetableGrid({ semesterNumber = 3 }: TimetableGridProps) {
     let printContent = `
     <html>
       <head>
-        <title>Timetable - Semester ${semesterNumber}</title>
+        <title>Timetable - Semester ${semesterNumber} - Grade${searchParams.get('grade')}</title>
         <script src="https://cdn.tailwindcss.com"></script>
         <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
         <script>
@@ -236,7 +236,7 @@ export function TimetableGrid({ semesterNumber = 3 }: TimetableGridProps) {
               </div>
               <h1 class="text-xl sm:text-2xl font-bold text-slate-800 tracking-tight">Timetable</h1>
             </div>
-            <p class="text-slate-500 text-center text-sm sm:text-base">Semester ${semesterNumber}</p>
+            <p class="text-slate-500 text-center text-sm sm:text-base">Semester ${semesterNumber}  Grade  ${searchParams.get('grade')} </p>
           </div>
           
           <div class="table-responsive overflow-hidden rounded-xl shadow-lg border border-slate-100">
