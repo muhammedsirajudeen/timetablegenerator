@@ -265,6 +265,12 @@ export default function ManageSubjects() {
                 />
               </div>
               <div>
+                <Label htmlFor="credit">Credit</Label>
+                <Input
+                  id="credit"
+                />
+              </div>
+              <div>
                 <Label htmlFor="subject_code">Subject Code</Label>
                 <Input
                   id="subject_code"
